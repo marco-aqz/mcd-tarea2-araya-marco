@@ -59,3 +59,6 @@ src/minichat/
   controller/ chat_controller.py
   ui/    chat_app.py widgets_view.py history_html.py
 ```
+## Nombre: Marco Esteban Araya Quezada
+## Fecha: 14.11.2026
+## Tarea 2 Ingenieria de Software
