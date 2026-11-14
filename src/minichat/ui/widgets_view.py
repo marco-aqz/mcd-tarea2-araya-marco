@@ -13,6 +13,8 @@ from minichat.ui.history_html import HistoryHTML
 
 from core.events import Event
 
+from dataclasses import replace
+
 class WidgetsView(Observer):
     """Notebook UI that observes both the session and the controller.
 
@@ -137,13 +139,14 @@ class WidgetsView(Observer):
             return
 
         if self.role.value == Role.USER.value:
-            self._ctl.set_generation(
-                float(self.temp.value),
-                float(self.topp.value),
-                int(self.topk.value),
-                int(self.maxnt.value),
-                900,
+            new_cfg = replace(
+                self._ctl.config,
+                temperature=float(self.temp.value),
+                top_p=float(self.topp.value),
+                top_k=int(self.topk.value),
+                max_new_tokens=int(self.maxnt.value),
             )
+            self._ctl.set_generation(new_cfg)
             self._ctl.send_user(text)
         elif self.role.value == Role.ASSISTANT.value:
             self._ctl.add_assistant(text)
