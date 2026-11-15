@@ -63,17 +63,6 @@ class ChatSession(Observable):
             for m in self._messages
         ]
 
-    def get_summary(self) -> list[dict[str, Any]]:
-        """Return a serializable representation of the chat history."""
-        result = []
-        for m in self._messages:
-            result.append({
-                "role": m.role.value,
-                "content": m.content,
-                "timestamp": m.timestamp.isoformat(),
-                "meta": m.meta,
-            })
-        return result
 
     def last_assistant_text(self) -> str | None:
         """Return the content of the last assistant message, or None"""
@@ -81,11 +70,3 @@ class ChatSession(Observable):
             if m.role == Role.ASSISTANT:
                 return m.content
         return None
-
-    def get_observer_count(self) -> int:
-        """Return the number of subscribed observers."""
-        return len(self._observers)
-
-    def has_observers(self) -> bool:
-        """Check if there are any subscribed observers."""
-        return len(self._observers) > 0
