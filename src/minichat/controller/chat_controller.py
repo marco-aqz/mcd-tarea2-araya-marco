@@ -12,7 +12,7 @@ from minichat.model.chat_session import ChatSession
 from minichat.model.generation_config import GenerationConfig
 from minichat.model.role import Role
 
-from core.events import Event
+from minichat.core.events import Event
 
 logger = logging.getLogger(__name__)
 
