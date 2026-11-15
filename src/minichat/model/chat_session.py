@@ -5,8 +5,7 @@ from typing import Any, Optional
 from minichat.model.message import Message
 from minichat.model.role import Role
 from minichat.core.observable import Observable
-from core.events import Event
-
+from minichat.core.events import Event
 
 class ChatSession(Observable):
     """Observable model that stores the sequence of chat messages.
@@ -75,6 +74,13 @@ class ChatSession(Observable):
                 "meta": m.meta,
             })
         return result
+
+    def last_assistant_text(self) -> str | None:
+        """Return the content of the last assistant message, or None"""
+        for m in reversed(self.all()):
+            if m.role == Role.ASSISTANT:
+                return m.content
+        return None
 
     def get_observer_count(self) -> int:
         """Return the number of subscribed observers."""
