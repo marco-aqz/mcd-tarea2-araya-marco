@@ -11,7 +11,7 @@ from minichat.model.chat_session import ChatSession
 from minichat.model.role import Role
 from minichat.ui.history_html import HistoryHTML
 
-from core.events import Event
+from minichat.core.events import Event
 
 from dataclasses import replace
 
