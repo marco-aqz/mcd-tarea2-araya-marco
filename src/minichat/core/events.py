@@ -1,4 +1,4 @@
-from enum import enum
+from enum import Enum
 
 class Event(str, Enum):
     MESSAGES_UPDATED = "messages_updated"
