@@ -83,40 +83,22 @@ class ChatController(Observable):
         Raises:
             ValueError: If text is empty or whitespace.
         """
-        # 1. Validate input
-        if text is None:
-            text = ""
-        text = text.strip()
-        if len(text) == 0:
+        
+        text = self._validate_text(text)
+        if not text:
             raise ValueError("text cannot be empty")
-        if len(text) > 2000:
-            text = text[:2000]
 
-        # 2. Store the user turn
         self._session.add(Role.USER, text)
         self._notify(Event.GENERATING_START, {})
 
-        # 3. Call the backend and measure latency
-        started = time.perf_counter()
         try:
-            reply = self._backend.reply(self._session, self._cfg)
+            reply, elapsed_ms = self._generate_reply()
         except Exception as exc:
             self._log.exception("Backend error during reply")
             self._notify(Event.GENERATING_ERROR, {"error": str(exc)})
             return
-        elapsed_ms = int((time.perf_counter() - started) * 1000)
 
-        # 4. Build metadata for the assistant turn
-        meta: dict[str, Any] = {
-            "backend": self._backend.name,
-            "gen_cfg": asdict(self._cfg),
-            "latency_ms": elapsed_ms,
-            "prompt_chars": len(text),
-            "reply_chars": len(reply),
-        }
-        self._log.debug("reply generated in %d ms", elapsed_ms)
-
-        # 5. Store the assistant turn
+        meta = self._build_meta(text, reply, elapsed_ms)
         self._session.add(Role.ASSISTANT, reply, meta=meta)
         self._notify(Event.GENERATING_DONE, {"reply": reply})
 
@@ -155,4 +137,24 @@ class ChatController(Observable):
 
     def _validate_text(self, text: Optional[str]) -> str:
         """Return the stripped text, or '' when it is None/blank."""
-        return (text or "").strip()
+        clean = (text or "").strip()
+        return clean[:2000] if len(clean) > 2000 else clean
+
+    def _generate_reply(self) -> tuple[str, int]:
+        """Call the backend, measure latency, return reply and enlapsed time in ms"""
+        started = time.perf_counter()
+        reply = self._backend.reply(self._session, self._cfg)
+        elapsed_ms = int((time.perf_counter() - started) * 1000)
+        return reply, elapsed_ms
+
+    def _build_meta(self, text: str, reply: str, elapsed_ms: int) -> dict[str, Any]:
+        """Build metadata for the assistant turn."""
+        meta: dict[str, Any] = {
+            "backend": self._backend.name,
+            "gen_cfg": asdict(self._cfg),
+            "latency_ms": elapsed_ms,
+            "prompt_chars": len(text),
+            "reply_chars": len(reply),
+        }
+        self._log.debug("reply generated in %d ms", elapsed_ms)
+        return meta
